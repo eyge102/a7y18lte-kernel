@@ -74,7 +74,7 @@ int selinux_policycap_netpeer;
 int selinux_policycap_openperm;
 int selinux_policycap_alwaysnetwork;
 
-static DEFINE_RWLOCK(policy_rwlock);
+DEFINE_RWLOCK(policy_rwlock);
 
 static struct sidtab sidtab;
 struct policydb policydb;
@@ -87,6 +87,16 @@ int ss_initialized;
  * occurs.
  */
 static u32 latest_granting;
+
+u32 selinux_ss_inc_latest_granting(void)
+{
+	u32 seqno;
+
+	write_lock_irq(&policy_rwlock);
+	seqno = ++latest_granting;
+	write_unlock_irq(&policy_rwlock);
+	return seqno;
+}
 
 /* Forward declaration. */
 static int context_struct_to_string(struct context *context, char **scontext,

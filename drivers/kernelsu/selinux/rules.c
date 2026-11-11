@@ -55,15 +55,17 @@ extern int avc_ss_reset(u32 seqno);
 #else
 extern int avc_ss_reset(struct selinux_avc *avc, u32 seqno);
 #endif
+#ifndef KSU_COMPAT_USE_SELINUX_STATE
+extern u32 selinux_ss_inc_latest_granting(void);
+#endif
 // reset avc cache table, otherwise the new rules will not take effect if already denied
 static void reset_avc_cache()
 {
 	#if defined(KSU_COMPAT_USE_SELINUX_STATE)
 	u32 seqno = selinux_state.ss ? ++selinux_state.ss->latest_granting : 1;
 	#else
-	/* 4.9: no selinux_state; use a monotonic local seqno for AVC/policyload notifications */
-	static u32 ksu_avc_seqno = 1;
-	u32 seqno = ++ksu_avc_seqno;
+	/* Keep services.c latest_granting synchronized with avc_cache.latest_notif */
+	u32 seqno = selinux_ss_inc_latest_granting();
 	#endif
 
 #if ((!defined(KSU_COMPAT_USE_SELINUX_STATE)) || \

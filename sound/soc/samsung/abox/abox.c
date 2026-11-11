@@ -336,7 +336,7 @@ static int abox_start_ipc_transaction_atomic(struct device *dev,
 		break;
 	}
 
-	memcpy(tx_sram_base, supplement, size);
+	memcpy_toio(tx_sram_base, supplement, size);
 	writel(1, tx_ack_sram_base);
 	abox_gic_generate_interrupt(data->pdev_gic, hw_irq);
 
@@ -403,7 +403,7 @@ static void abox_process_ipc(struct work_struct *work)
 		dev_dbg(dev, "%s(%d, %zu)\n", __func__, hw_irq, size);
 
 		*state = SEND_MSG;
-		memcpy(tx_sram_base, supplement, size);
+		memcpy_toio(tx_sram_base, supplement, size);
 		abox_gic_generate_interrupt(data->pdev_gic, hw_irq);
 		result = wait_event_timeout(data->ipc_wait_queue,
 				(*state == SEND_MSG_OK ||
@@ -4388,7 +4388,7 @@ static bool abox_is_calliope_incompatible(struct platform_device *pdev)
 	ABOX_IPC_MSG msg;
 	struct IPC_SYSTEM_MSG *system_msg = &msg.msg.system;
 
-	memcpy(&msg, data->sram_base + 0x30040, 0x3C);
+	memcpy_fromio(&msg, data->sram_base + 0x30040, 0x3C);
 
 	return ((system_msg->param3 >> 24) == 'A');
 }
@@ -4759,7 +4759,7 @@ static irqreturn_t abox_irq_handler(int irq, void *dev_id)
 	if (abox_dma_irq_handler(irq, data) == IRQ_HANDLED)
 		return IRQ_HANDLED;
 
-	memcpy(&msg, data->sram_base + data->ipc_rx_offset, sizeof(msg));
+	memcpy_fromio(&msg, data->sram_base + data->ipc_rx_offset, sizeof(msg));
 	writel(0, data->sram_base + data->ipc_rx_ack_offset);
 
 	dev_dbg(dev, "%s: irq=%d, ipcid=%d\n", __func__, irq, msg.ipcid);

@@ -1,0 +1,1 @@
+cmd_sound/soc/codecs/tfa9872/snd-soc-tfa98xx.o := aarch64-linux-gnu-ld -EL   -r -o sound/soc/codecs/tfa9872/snd-soc-tfa98xx.o sound/soc/codecs/tfa9872/tfa98xx.o sound/soc/codecs/tfa9872/tfa_container.o sound/soc/codecs/tfa9872/tfa_dsp.o sound/soc/codecs/tfa9872/tfa_init.o sound/soc/codecs/tfa9872/tfa_debug.o sound/soc/codecs/tfa9872/tfa_cal.o sound/soc/codecs/tfa9872/tfa_log.o 

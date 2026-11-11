@@ -21,7 +21,10 @@ void __iomem *devm_not_request_and_map(struct platform_device *pdev,
 	if (size)
 		*size = resource_size(res);
 
-	result = devm_ioremap(&pdev->dev, res->start, resource_size(res));
+	if (name && (!strcmp(name, "sram") || strstr(name, "sram")))
+		result = devm_ioremap_wc(&pdev->dev, res->start, resource_size(res));
+	else
+		result = devm_ioremap(&pdev->dev, res->start, resource_size(res));
 	if (IS_ERR_OR_NULL(result)) {
 		dev_err(&pdev->dev, "Failed to map %s\n", name);
 		return ERR_PTR(-EFAULT);
@@ -54,7 +57,10 @@ void __iomem *devm_request_and_map(struct platform_device *pdev,
 		return ERR_PTR(-EFAULT);
 	}
 
-	result = devm_ioremap(&pdev->dev, res->start, resource_size(res));
+	if (name && (!strcmp(name, "sram") || strstr(name, "sram")))
+		result = devm_ioremap_wc(&pdev->dev, res->start, resource_size(res));
+	else
+		result = devm_ioremap(&pdev->dev, res->start, resource_size(res));
 	if (IS_ERR_OR_NULL(result)) {
 		dev_err(&pdev->dev, "Failed to map %s\n", name);
 		return ERR_PTR(-EFAULT);
@@ -86,7 +92,10 @@ void __iomem *devm_request_and_map_byname(struct platform_device *pdev,
 		return ERR_PTR(-EFAULT);
 	}
 
-	result = devm_ioremap(&pdev->dev, res->start, resource_size(res));
+	if (name && (!strcmp(name, "sram") || strstr(name, "sram")))
+		result = devm_ioremap_wc(&pdev->dev, res->start, resource_size(res));
+	else
+		result = devm_ioremap(&pdev->dev, res->start, resource_size(res));
 	if (IS_ERR_OR_NULL(result)) {
 		dev_err(&pdev->dev, "Failed to map %s\n", name);
 		return ERR_PTR(-EFAULT);

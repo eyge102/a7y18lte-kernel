@@ -128,7 +128,7 @@ int tfadsp_write(int devidx, int size, void *buf)
 	erap_msg->param.raw.params[0] = TFADSP_CMD_WRITE;
 	erap_msg->param.raw.params[1] = size;
 
-	memcpy(smem_write_buf, tfadrv_write_buf, size);
+	memcpy_toio(smem_write_buf, tfadrv_write_buf, size);
 	abox_ipc_write_avail = false;
 	abox_ipc_write_error = TFADSP_SUCCESS;
 
@@ -173,7 +173,7 @@ static irqreturn_t abox_synchronized_ipc_handler(int irq,
 		case TFADSP_RES_READ:
 			smem_read_buf =
 			(char *)abox_addr_to_kernel_addr(aboxdata, SMEM_READ);
-			memcpy(tfadrv_read_buf, smem_read_buf, size);
+			memcpy_fromio(tfadrv_read_buf, smem_read_buf, size);
 			abox_ipc_read_avail = true;
 			abox_ipc_read_error = TFADSP_SUCCESS;
 			ipc_dbg("TFADSP_CMD_READ DONE size= %d", size);
@@ -183,7 +183,7 @@ static irqreturn_t abox_synchronized_ipc_handler(int irq,
 		case TFADSP_RES_BLACKBOX:
 			smem_read_buf =
 			(char *)abox_addr_to_kernel_addr(aboxdata, SMEM_READ);
-			memcpy(tfadrv_read_buf, smem_read_buf, size);
+			memcpy_fromio(tfadrv_read_buf, smem_read_buf, size);
 			abox_ipc_read_avail = true;
 			abox_ipc_read_error = TFADSP_SUCCESS;
 			ipc_dbg("TFADSP_CMD_BLACKBOX DONE size= %d", size);

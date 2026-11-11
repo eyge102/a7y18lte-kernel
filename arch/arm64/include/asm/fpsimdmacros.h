@@ -76,7 +76,6 @@
 	fpsimd_restore_fpcr x\tmpnr, \state
 .endm
 
-.altmacro
 .macro fpsimd_save_partial state, numnr, tmpnr1, tmpnr2
 	mrs	x\tmpnr1, fpsr
 	str	w\numnr, [\state, #8]
@@ -86,11 +85,22 @@
 	add	\state, \state, x\numnr, lsl #4
 	sub	x\tmpnr1, x\tmpnr1, x\numnr, lsl #1
 	br	x\tmpnr1
-	.irp	qa, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0
-	.irp	qb, %(qa + 1)
-	stp	q\qa, q\qb, [\state, # -16 * \qa - 16]
-	.endr
-	.endr
+	stp	q30, q31, [\state, #-496]
+	stp	q28, q29, [\state, #-464]
+	stp	q26, q27, [\state, #-432]
+	stp	q24, q25, [\state, #-400]
+	stp	q22, q23, [\state, #-368]
+	stp	q20, q21, [\state, #-336]
+	stp	q18, q19, [\state, #-304]
+	stp	q16, q17, [\state, #-272]
+	stp	q14, q15, [\state, #-240]
+	stp	q12, q13, [\state, #-208]
+	stp	q10, q11, [\state, #-176]
+	stp	q8, q9, [\state, #-144]
+	stp	q6, q7, [\state, #-112]
+	stp	q4, q5, [\state, #-80]
+	stp	q2, q3, [\state, #-48]
+	stp	q0, q1, [\state, #-16]
 0:
 .endm
 
@@ -103,10 +113,21 @@
 	add	\state, \state, x\tmpnr2, lsl #4
 	sub	x\tmpnr1, x\tmpnr1, x\tmpnr2, lsl #1
 	br	x\tmpnr1
-	.irp	qa, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0
-	.irp	qb, %(qa + 1)
-	ldp	q\qa, q\qb, [\state, # -16 * \qa - 16]
-	.endr
-	.endr
+	ldp	q30, q31, [\state, #-496]
+	ldp	q28, q29, [\state, #-464]
+	ldp	q26, q27, [\state, #-432]
+	ldp	q24, q25, [\state, #-400]
+	ldp	q22, q23, [\state, #-368]
+	ldp	q20, q21, [\state, #-336]
+	ldp	q18, q19, [\state, #-304]
+	ldp	q16, q17, [\state, #-272]
+	ldp	q14, q15, [\state, #-240]
+	ldp	q12, q13, [\state, #-208]
+	ldp	q10, q11, [\state, #-176]
+	ldp	q8, q9, [\state, #-144]
+	ldp	q6, q7, [\state, #-112]
+	ldp	q4, q5, [\state, #-80]
+	ldp	q2, q3, [\state, #-48]
+	ldp	q0, q1, [\state, #-16]
 0:
 .endm

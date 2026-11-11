@@ -1,0 +1,75 @@
+name: Build Quantum Kernel (Exynos 7885 / A750F)
+
+on:
+  push:
+    branches: [ "oneui", "main", "master" ]
+  pull_request:
+    branches: [ "oneui", "main", "master" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Kernel for SM-A750F (a7y18lte)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential bc bison flex libssl-dev libncurses5-dev \
+            libelf-dev xz-utils curl wget git ccache libarchive-tools \
+            zip libxml2-dev
+
+      - name: Download & Setup Toolchain (GCC 8.3 ARM)
+        run: |
+          mkdir -p toolchain
+          wget -q -O toolchain.tar.xz "https://developer.arm.com/-/media/Files/downloads/gnu-a/8.3-2019.03/binrel/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu.tar.xz"
+          tar -xf toolchain.tar.xz -C toolchain/
+          rm -f toolchain.tar.xz
+          TC_PATH=$(find toolchain/ -maxdepth 2 -type d -name "bin" | head -n 1)
+          echo "TOOLCHAIN_BIN=${GITHUB_WORKSPACE}/${TC_PATH}" >> $GITHUB_ENV
+
+      - name: Compile Kernel
+        run: |
+          export PATH="${TOOLCHAIN_BIN}:${PATH}"
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export ANDROID_MAJOR_VERSION=p
+          export PLATFORM_VERSION=9.0.0
+
+          echo "Using compiler:"
+          aarch64-linux-gnu-gcc --version
+
+          make clean && make mrproper
+          make exynos7885-a7y18lte_defconfig
+          make -j$(nproc)
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p output
+          if [ -f "arch/arm64/boot/Image" ]; then
+            cp arch/arm64/boot/Image output/Image
+          fi
+          if [ -f "arch/arm64/boot/Image.gz" ]; then
+            cp arch/arm64/boot/Image.gz output/Image.gz
+          fi
+          # Copy generated DTBs
+          find arch/arm64/boot/dts/ -name "*.dtb" -exec cp {} output/ \; 2>/dev/null || true
+
+          cd output
+          zip -r Quantum-Kernel-A750F-$(date +%Y%m%d).zip .
+          cd ..
+
+      - name: Upload Kernel Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Quantum-Kernel-A750F
+          path: output/
